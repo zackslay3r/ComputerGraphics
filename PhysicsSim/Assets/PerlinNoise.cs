@@ -4,8 +4,7 @@ using UnityEngine;
 public class PerlinNoise : MonoBehaviour
 {
 
-    public int width = 256;
-    public int height = 256;
+   
 
     public float scale = 20f;
 
@@ -21,20 +20,27 @@ public class PerlinNoise : MonoBehaviour
     public float perlinNoise = 0f;
     public float refinement = 0f;
     public float multiplier = 0f;
+    public int cubeCount = 0;
+    public int width = 0;
+    public int length = 0;
 
+    public enum CubeAxis {X,Y,Z };
+    public CubeAxis cubeaxis;
     private void Start()
     {
+        
         offsetX = Random.Range(0f, 99999f);
         offsetY = Random.Range(0f, 99999f);
 
-        for (int i = 0; i < amountOfCubes; i++)
+        for (int i = 0; i < width; i++)
         {
-            for (int j = 0; j < amountOfCubes; j++)
+            for (int j = 0; j < length; j++)
             {
                 perlinNoise = Mathf.PerlinNoise(i * refinement, j * refinement);
                 GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 go.transform.position = new Vector3(i, perlinNoise * multiplier, j);
                 cubes.Add(go);
+                cubeCount++;
             }
         }
 
@@ -50,43 +56,61 @@ public class PerlinNoise : MonoBehaviour
 
         foreach (GameObject cube in cubes)
         {
+            cubeaxis = CubeAxis.X;
+            float scaledX = ScaleACoord(cube.transform.position.x, cubeaxis);
+            cubeaxis = CubeAxis.Z;
+            float scaledZ = ScaleACoord(cube.transform.position.z , cubeaxis);
 
-            float scaledX = ScaleACoord(cube.transform.position.x);
-
-                    perlinNoise = Mathf.PerlinNoise((cube.transform.position.x * refinement / 10), (cube.transform.position.z * refinement / 10));
+                    perlinNoise = Mathf.PerlinNoise(scaledX + Time.time, scaledZ + Time.time);
                     //GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     cube.transform.position = new Vector3(cube.transform.position.x, perlinNoise * multiplier, cube.transform.position.z);
                     //cubes.Add(go);
                 
         }
 
-            //for (int i = 0; i < amountOfCubes; i++)
-            //{
-            //    for (int j = 0; j < amountOfCubes; j++)
-            //    {
-            //       // perlinNoise = Mathf.PerlinNoise(i * refinement, j * refinement);
-            //    }
-            //}
-            //GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            //cube.transform.position = new Vector3(cube.transform.position.x, perlinNoise * multiplier, cube.transform.position.x);
-
-
-
+        
 
 
     }
-    public float ScaleACoord(float coord)
+    public float ScaleACoord(float coord, CubeAxis cubeax)
     {
-    float scaledCoord, normalizedCoord;
+
+
+        float scaledCoord = 0f;
+
+        if (cubeax == CubeAxis.X)
+        {
+            scaledCoord = ConvertRange(0f, width, 0f, 1f, coord);
+            return scaledCoord;
+        }
+        else if (cubeax == CubeAxis.Z)
+        {
+            scaledCoord = ConvertRange(0f, length, 0f, 1f, coord);
+            return scaledCoord;
+        }
+        else
+        {
+            return scaledCoord;
+        }
+    //float scaledCoord, normalizedCoord;
     // first, normalize the coord.
     //normalizedCoord = (coord - 0.0f) / (1.0f - 0.0f);
 
-    scaledCoord = Mathf.Clamp(coord, 0.0f, 1.0f);
+    //scaledCoord = Mathf.Clamp(coord, 0.0f, 1.0f);
 
     
 
-    return scaledCoord;
+    
     }
+  
+
+
+    public float ConvertRange(float originalMin, float OriginalMax, float newMin, float newMax, float value)
+    {
+        float scale = (float)(newMax - newMin) / (OriginalMax - originalMin);
+        return (float)(newMin + ((value - originalMin) * scale));
+    }
+
 }
 
 
