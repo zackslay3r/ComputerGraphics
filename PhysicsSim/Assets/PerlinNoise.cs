@@ -4,7 +4,8 @@ using UnityEngine;
 public class PerlinNoise : MonoBehaviour
 {
 
-   
+    public int width = 256;
+    public int height = 256;
 
     public float scale = 20f;
 
@@ -16,31 +17,33 @@ public class PerlinNoise : MonoBehaviour
     /// Testing
     /// </summary>
     public List<GameObject> cubes;
-    public int amountOfCubes = 0;
+    public int widthOfCubes = 0;
+    public int lengthOfCubes = 0;
     public float perlinNoise = 0f;
-    public float refinement = 0f;
-    public float multiplier = 0f;
-    public int cubeCount = 0;
-    public int width = 0;
-    public int length = 0;
+    public float frequency = 0f;
+    public float magnitude = 0f;
+    public float cubeScale;
 
-    public enum CubeAxis {X,Y,Z };
-    public CubeAxis cubeaxis;
+    private float maxX = 0f;
+    private float maxZ = 0f;
     private void Start()
     {
-        
-        offsetX = Random.Range(0f, 99999f);
-        offsetY = Random.Range(0f, 99999f);
+        //offsetX = Random.Range(0f, 99999f);
+        //offsetY = Random.Range(0f, 99999f);
+        maxX = widthOfCubes * cubeScale;
+        maxZ = lengthOfCubes * cubeScale;
 
-        for (int i = 0; i < width; i++)
+        for (int i = 0; i < widthOfCubes; i++)
         {
-            for (int j = 0; j < length; j++)
+            for (int j = 0; j < lengthOfCubes; j++)
             {
-                perlinNoise = Mathf.PerlinNoise(i * refinement, j * refinement);
+
+
+                //perlinNoise = Mathf.PerlinNoise(floai * refinement, j * refinement);
                 GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                go.transform.position = new Vector3(i, perlinNoise * multiplier, j);
+                go.transform.localScale = new Vector3(cubeScale,cubeScale,cubeScale);
+                go.transform.position = new Vector3(i, 0.0f, j);
                 cubes.Add(go);
-                cubeCount++;
             }
         }
 
@@ -56,92 +59,44 @@ public class PerlinNoise : MonoBehaviour
 
         foreach (GameObject cube in cubes)
         {
-            cubeaxis = CubeAxis.X;
-            float scaledX = ScaleACoord(cube.transform.position.x, cubeaxis);
-            cubeaxis = CubeAxis.Z;
-            float scaledZ = ScaleACoord(cube.transform.position.z , cubeaxis);
 
-                    perlinNoise = Mathf.PerlinNoise(scaledX + Time.time, scaledZ + Time.time);
+            float scaledX = ScaleACoord(0.0f,cubeScale * widthOfCubes ,0.0f,1.0f,cube.transform.position.x);
+            float scaledZ = ScaleACoord(0.0f,cubeScale * widthOfCubes ,0.0f,1.0f,cube.transform.position.z);
+            perlinNoise = Mathf.PerlinNoise((scaledX * frequency + Time.time), (scaledZ * frequency + Time.time));
                     //GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    cube.transform.position = new Vector3(cube.transform.position.x, perlinNoise * multiplier, cube.transform.position.z);
+           cube.transform.position = new Vector3(cube.transform.position.x, perlinNoise * magnitude , cube.transform.position.z);
                     //cubes.Add(go);
                 
         }
 
-        
+
 
 
     }
-    public float ScaleACoord(float coord, CubeAxis cubeax)
+    public float ScaleACoord(float originalMin, float originalMax, float newMin, float newMax , float originalValue)
     {
 
+        float OldRange, NewRange, NewValue;
+        OldRange = originalMax - originalMin;
+        NewRange = newMax - newMin;
 
-        float scaledCoord = 0f;
-
-        if (cubeax == CubeAxis.X)
-        {
-            scaledCoord = ConvertRange(0f, width, 0f, 1f, coord);
-            return scaledCoord;
-        }
-        else if (cubeax == CubeAxis.Z)
-        {
-            scaledCoord = ConvertRange(0f, length, 0f, 1f, coord);
-            return scaledCoord;
-        }
-        else
-        {
-            return scaledCoord;
-        }
-    //float scaledCoord, normalizedCoord;
+        NewValue = (((originalValue - originalMin) * NewRange) / OldRange ) + newMin;
     // first, normalize the coord.
     //normalizedCoord = (coord - 0.0f) / (1.0f - 0.0f);
-
     //scaledCoord = Mathf.Clamp(coord, 0.0f, 1.0f);
 
-    
 
     
+
+    return NewValue;
     }
-  
 
 
-    public float ConvertRange(float originalMin, float OriginalMax, float newMin, float newMax, float value)
-    {
-        float scale = (float)(newMax - newMin) / (OriginalMax - originalMin);
-        return (float)(newMin + ((value - originalMin) * scale));
-    }
 
 }
 
 
 
-    //    Texture2D GenerateTexture()
-    //    {
-    //        Texture2D texture = new Texture2D(width, height);
-
-    //        // Generate a perlin noise map for the texture
-    //        for (int x = 0; x < width; x++)
-    //        {
-    //            for (int y = 0; y < height; y++)
-    //            {
-    //                Color color = CalculateColor(x, y);
-    //                texture.SetPixel(x, y, color);
-    //            }
-    //        }
-
-
-    //        texture.Apply();
-    //        return texture;
-    //    }
-    //    Color CalculateColor(int x, int y)
-    //    {
-    //        float xCoord = (float)x / width * scale + offsetX;
-    //        float yCoord = (float)y / height * scale + offsetY;
-
-
-    //        float sample = Mathf.PerlinNoise(xCoord, yCoord);
-    //        return new Color(sample, sample, sample);
-    //    }
     
 
 
